@@ -32,6 +32,12 @@
 //*********************************************************************************************
 //************ IMPORTANT SETTINGS - YOU MUST CHANGE/CONFIGURE TO FIT YOUR HARDWARE ************
 //*********************************************************************************************
+//******************Green Antenna*************************************************
+// #define NODEID        1    //must be unique for each node on same network (range up to 254, 255 is used for broadcast)
+// #define NETWORKID     100  //the same on all nodes that talk to each other (range up to 255)
+// #define GATEWAYID     2
+
+//****************White Antenna******************************
 #define NODEID        1    //must be unique for each node on same network (range up to 254, 255 is used for broadcast)
 #define NETWORKID     100  //the same on all nodes that talk to each other (range up to 255)
 #define GATEWAYID     2
@@ -56,6 +62,9 @@
   #define Serial SERIAL_PORT_USBVIRTUAL // Required for Serial on Zero based boards
 #endif
 
+const int buttonPin = 7;     // the number of the pushbutton pin
+const int ledPin =  6;      // the number of the LED pin
+int buttonState = 0;
 char payload[] = "123 ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 char buff[20];
 byte sendSize=0;
@@ -71,6 +80,8 @@ SPIFlash flash(SS_FLASHMEM, 0xEF30); //EF30 for 4mbit  Windbond chip (W25X40CL)
 void setup() {
   Serial.begin(SERIAL_BAUD);
   radio.initialize(FREQUENCY,NODEID,NETWORKID);
+  pinMode(buttonPin, INPUT);
+  pinMode(ledPin, OUTPUT);
 #ifdef IS_RFM69HW_HCW
   radio.setHighPower(); //must include this only for RFM69HW/HCW!
 #endif
@@ -116,9 +127,35 @@ void Blink(byte PIN, int DELAY_MS)
   digitalWrite(PIN,LOW);
 }
 
+void BlinkInt(int PIN, int DELAY_MS)
+{
+  pinMode(PIN, OUTPUT);
+  digitalWrite(PIN,HIGH);
+  delay(DELAY_MS);
+  digitalWrite(PIN,LOW);
+}
+
 long lastPeriod = 0;
 void loop() {
   //process any serial input
+  // buttonState = digitalRead(buttonPin);
+
+  if(buttonState == HIGH){
+    Serial.print("Sending[");
+    Serial.print("msg");
+    Serial.print("]: ");
+      Serial.print("moty");
+    if (radio.sendWithRetry(GATEWAYID, "moty", 4)){
+      Serial.print(" ok!");
+    }
+    else{
+       Serial.print(" nothing...");
+    }
+    Serial.println();
+    Blink(LED_BUILTIN,3);
+      delay(500);
+  }
+
   if (Serial.available() > 0)
   {
     char input = Serial.read();
@@ -162,7 +199,8 @@ void loop() {
       radio.sendACK();
       Serial.print(" - ACK sent");
     }
-    Blink(LED_BUILTIN,3);
+    Blink(LED_BUILTIN,3 );
+    Blink(ledPin, 500);
     Serial.println();
   }
 }
