@@ -33,14 +33,14 @@
 //************ IMPORTANT SETTINGS - YOU MUST CHANGE/CONFIGURE TO FIT YOUR HARDWARE ************
 //*********************************************************************************************
 //******************Green Antenna*************************************************
-// #define NODEID        1    //must be unique for each node on same network (range up to 254, 255 is used for broadcast)
+// #define NODEID        2    //must be unique for each node on same network (range up to 254, 255 is used for broadcast)
 // #define NETWORKID     100  //the same on all nodes that talk to each other (range up to 255)
-// #define GATEWAYID     2
+// #define GATEWAYID     1
 
 //****************White Antenna******************************
 #define NODEID        1    //must be unique for each node on same network (range up to 254, 255 is used for broadcast)
 #define NETWORKID     100  //the same on all nodes that talk to each other (range up to 255)
-#define GATEWAYID     2
+#define GATEWAYID     2 //todo change variable name to node 2
 //Match frequency to the hardware version of the radio on your Moteino (uncomment one):
 #define FREQUENCY   RF69_433MHZ
 //#define FREQUENCY   RF69_868MHZ
@@ -138,7 +138,7 @@ void BlinkInt(int PIN, int DELAY_MS)
 long lastPeriod = 0;
 void loop() {
   //process any serial input
-  // buttonState = digitalRead(buttonPin);
+  buttonState = digitalRead(buttonPin);
 
   if(buttonState == HIGH){
     Serial.print("Sending[");
