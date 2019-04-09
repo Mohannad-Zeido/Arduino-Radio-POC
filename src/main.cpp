@@ -127,14 +127,6 @@ void Blink(byte PIN, int DELAY_MS)
   digitalWrite(PIN,LOW);
 }
 
-void BlinkInt(int PIN, int DELAY_MS)
-{
-  pinMode(PIN, OUTPUT);
-  digitalWrite(PIN,HIGH);
-  delay(DELAY_MS);
-  digitalWrite(PIN,LOW);
-}
-
 long lastPeriod = 0;
 void loop() {
   //process any serial input
