@@ -6,12 +6,12 @@
 //******************Green Antenna*************************************************
 // #define NODEID        2    //must be unique for each node on same network (range up to 254, 255 is used for broadcast)
 // #define NETWORKID     100  //the same on all nodes that talk to each other (range up to 255)
-// #define GATEWAYID     1
+// #define SECONDNODEID     1
 
 //******************White Antenna*************************************************
 #define NODEID        1    //must be unique for each node on same network (range up to 254, 255 is used for broadcast)
 #define NETWORKID     100  //the same on all nodes that talk to each other (range up to 255)
-#define GATEWAYID     2 //todo change variable name to node 2
+#define SECONDNODEID     2 //todo change variable name to node 2
 
 #define FREQUENCY   RF69_433MHZ
 
@@ -21,62 +21,48 @@
 #define ENABLE_ATC    //comment out this line to disable AUTO TRANSMISSION CONTROL
 #define ATC_RSSI      -80
 //*********************************************************************************************
+
 #define SERIAL_BAUD   115200
 
-const int buttonPin = 7;     // the number of the pushbutton pin
-const int ledPin =  6;      // the number of the LED pin
-int buttonState = 0;
-char buff[20];
-byte sendSize=0;
-int timesButtonPressed = 0;
-SPIFlash flash(SS_FLASHMEM, 0xEF30); //EF30 for 4mbit  Windbond chip (W25X40CL)
+const int ledPin15Minutes =  3;
+const int ledPin30Minutes =  4;
+const int ledPin45Minutes =  5;
+const int ledPin60Minutes =  6;
+const int ledPinStatus =  7;
 
-#ifdef ENABLE_ATC
-  RFM69_ATC radio;
-#else
-  RFM69 radio;
-#endif
+const int buttonPinIncrementTime = 14;
+const int buttonPinSendMessage = 15;
+const int buttonPinReset = 16;
+
+char buff[20];
+int timeTillTea = 0;
+
+RFM69_ATC radio;
 
 void setup() {
+
   Serial.begin(SERIAL_BAUD);
   radio.initialize(FREQUENCY,NODEID,NETWORKID);
-  pinMode(buttonPin, INPUT);
-  pinMode(ledPin, OUTPUT);
-#ifdef IS_RFM69HW_HCW
   radio.setHighPower(); //must include this only for RFM69HW/HCW!
-#endif
   radio.encrypt(ENCRYPTKEY);
-  //radio.setFrequency(919000000); //set frequency to some custom frequency
-
-//Auto Transmission Control - dials down transmit power to save battery (-100 is the noise floor, -90 is still pretty good)
-//For indoor nodes that are pretty static and at pretty stable temperatures (like a MotionMote) -90dBm is quite safe
-//For more variable nodes that can expect to move or experience larger temp drifts a lower margin like -70 to -80 would probably be better
-//Always test your ATC mote in the edge cases in your own environment to ensure ATC will perform as you expect
-#ifdef ENABLE_ATC
   radio.enableAutoPower(ATC_RSSI);
-#endif
-
-  char buff[50];
-  sprintf(buff, "\nTransmitting at %d Mhz...", FREQUENCY==RF69_433MHZ ? 433 : FREQUENCY==RF69_868MHZ ? 868 : 915);
-  Serial.println(buff);
-
-  if (flash.initialize())
-  {
-    Serial.print("SPI Flash Init OK ... UniqueID (MAC): ");
-    flash.readUniqueId();
-    for (byte i=0;i<8;i++)
-    {
-      Serial.print(flash.UNIQUEID[i], HEX);
-      Serial.print(' ');
-    }
-    Serial.println();
-  }
-  else
-    Serial.println("SPI Flash MEM not found (is chip soldered?)...");
-
-#ifdef ENABLE_ATC
   Serial.println("RFM69_ATC Enabled (Auto Transmission Control)\n");
-#endif
+
+  pinMode(buttonPinIncrementTime, INPUT);
+  pinMode(buttonPinSendMessage, INPUT);
+  pinMode(buttonPinReset, INPUT);
+
+  pinMode(ledPin15Minutes, OUTPUT);
+  pinMode(ledPin30Minutes, OUTPUT);
+  pinMode(ledPin45Minutes, OUTPUT);
+  pinMode(ledPin60Minutes, OUTPUT);
+  pinMode(ledPinStatus, OUTPUT);
+
+  digitalWrite(ledPin15Minutes, LOW);
+  digitalWrite(ledPin30Minutes, LOW);
+  digitalWrite(ledPin45Minutes, LOW);
+  digitalWrite(ledPin60Minutes, LOW);
+  digitalWrite(ledPinStatus, LOW);
 }
 
 void Blink(byte PIN, int DELAY_MS)
@@ -89,53 +75,78 @@ void Blink(byte PIN, int DELAY_MS)
 
 long lastPeriod = 0;
 void loop() {
-  //process any serial input
-  buttonState = digitalRead(buttonPin);
   //todo implement millis so that code does not read false positives
-  if(digitalRead(buttonPin) == HIGH){
-    timesButtonPressed = timesButtonPressed + 15;
-    if(timesButtonPressed == 15){
+  if(digitalRead(buttonPinIncrementTime) == HIGH){
+    timeTillTea = timeTillTea + 15;
+    if(timeTillTea == 15){
       Serial.print("Times Button Pressed: ");
-      Serial.println(timesButtonPressed);
-      //todo light 1 LED
-    }else if(timesButtonPressed == 30){
+      Serial.println(timeTillTea);
+      digitalWrite(ledPin15Minutes, HIGH);
+      digitalWrite(ledPin30Minutes, LOW);
+      digitalWrite(ledPin45Minutes, LOW);
+      digitalWrite(ledPin60Minutes, LOW);
+      digitalWrite(ledPinStatus, LOW);
+    }else if(timeTillTea == 30){
       Serial.print("Times Button Pressed: ");
-      Serial.println(timesButtonPressed);
-      //todo light 2 LEDs
-    }else if(timesButtonPressed == 45){
+      Serial.println(timeTillTea);
+      digitalWrite(ledPin15Minutes, HIGH);
+      digitalWrite(ledPin30Minutes, HIGH);
+      digitalWrite(ledPin45Minutes, LOW);
+      digitalWrite(ledPin60Minutes, LOW);
+      digitalWrite(ledPinStatus, LOW);
+    }else if(timeTillTea == 45){
       Serial.print("Times Button Pressed: ");
-      Serial.println(timesButtonPressed);
-      //todo light 3 LEDs
-    }else if(timesButtonPressed == 60){
+      Serial.println(timeTillTea);
+      digitalWrite(ledPin15Minutes, HIGH);
+      digitalWrite(ledPin30Minutes, HIGH);
+      digitalWrite(ledPin45Minutes, HIGH);
+      digitalWrite(ledPin60Minutes, LOW);
+      digitalWrite(ledPinStatus, LOW);
+    }else if(timeTillTea == 60){
       Serial.print("Times Button Pressed: ");
-      Serial.println(timesButtonPressed);
-      //todo light 4 LEDs
-    }else if(timesButtonPressed > 60){
-      timesButtonPressed = 0;
+      Serial.println(timeTillTea);
+      digitalWrite(ledPin15Minutes, HIGH);
+      digitalWrite(ledPin30Minutes, HIGH);
+      digitalWrite(ledPin45Minutes, HIGH);
+      digitalWrite(ledPin60Minutes, HIGH);
+      digitalWrite(ledPinStatus, LOW);
+    }else if(timeTillTea > 60){
+      timeTillTea = 0;
       Serial.print("Times Button Pressed: ");
-      Serial.println(timesButtonPressed);
-      //todo turn off all LEDs
+      Serial.println(timeTillTea);
+      digitalWrite(ledPin15Minutes, LOW);
+      digitalWrite(ledPin30Minutes, LOW);
+      digitalWrite(ledPin45Minutes, LOW);
+      digitalWrite(ledPin60Minutes, LOW);
+      digitalWrite(ledPinStatus, LOW);
     }
-    delay(500);
+    delay(200);
   }
-  buttonState = 0;
 
-  // if(buttonState == HIGH){
-  //   Serial.print("Sending[");
-  //   Serial.print("msg");
-  //   Serial.print("]: ");
-  //     Serial.print("moty");
-  //   if (radio.sendWithRetry(GATEWAYID, "moty", 4)){
-  //     Serial.print(" ok!");
-  //   }
-  //   else{
-  //      Serial.print(" nothing...");
-  //   }
-  //   Serial.println();
-  //   Blink(LED_BUILTIN,3);
-  //     delay(500);
-  // }
+  if(digitalRead(buttonPinSendMessage) == HIGH){
+    Serial.print("Sending[");
+    Serial.print("msg");
+    Serial.print("]: ");
+      Serial.print("moty");
+    if (radio.sendWithRetry(SECONDNODEID, "moty", 4)){
+      Serial.print(" ok!");
+    }
+    else{
+      Blink(ledPinStatus,500);
+      delay(60);
+      Blink(ledPinStatus,500);
+      delay(60);
+      Blink(ledPinStatus,500);
+      delay(60);
+       Serial.print(" nothing...");
+    }
+    Serial.println();
+    Blink(LED_BUILTIN,3);
+    delay(200);
+  }
 
+
+    //process any serial input
   if (Serial.available() > 0)
   {
     char input = Serial.read();
@@ -144,7 +155,7 @@ void loop() {
       Serial.print("msg");
       Serial.print("]: ");
         Serial.print("moaty");
-      if (radio.sendWithRetry(GATEWAYID, "moaty", 5)){
+      if (radio.sendWithRetry(SECONDNODEID, "moaty", 5)){
         Serial.print(" ok!");
       }
       else{
@@ -180,7 +191,7 @@ void loop() {
       Serial.print(" - ACK sent");
     }
     Blink(LED_BUILTIN,3 );
-    Blink(ledPin, 500);
+    Blink(ledPinStatus, 500);
     Serial.println();
   }
 }
