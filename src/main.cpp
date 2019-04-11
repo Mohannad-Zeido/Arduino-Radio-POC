@@ -129,15 +129,16 @@ void loop() {
     Serial.print("]: ");
       Serial.print("moty");
     if (radio.sendWithRetry(SECONDNODEID, "moty", 4)){
+      Blink(ledPinStatus,500);
       Serial.print(" ok!");
     }
     else{
-      Blink(ledPinStatus,500);
-      delay(60);
-      Blink(ledPinStatus,500);
-      delay(60);
-      Blink(ledPinStatus,500);
-      delay(60);
+      Blink(ledPin15Minutes,500);
+      delay(300);
+      Blink(ledPin15Minutes,500);
+      delay(300);
+      Blink(ledPin15Minutes,500);
+      delay(300);
        Serial.print(" nothing...");
     }
     Serial.println();
