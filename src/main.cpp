@@ -38,6 +38,7 @@ char buff[20];
 int timeTillTea = 0;
 
 RFM69_ATC radio;
+// RFM69 radio;
 
 void setup() {
 
@@ -133,13 +134,13 @@ void loop() {
       Serial.print(" ok!");
     }
     else{
+      Serial.print(" nothing...");
       Blink(ledPin15Minutes,500);
       delay(300);
       Blink(ledPin15Minutes,500);
       delay(300);
       Blink(ledPin15Minutes,500);
       delay(300);
-       Serial.print(" nothing...");
     }
     Serial.println();
     Blink(LED_BUILTIN,3);
