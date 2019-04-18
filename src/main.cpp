@@ -127,8 +127,10 @@ void loop() {
     Serial.print("Sending[");
     Serial.print("msg");
     Serial.print("]: ");
-      Serial.print("moty");
-    if (radio.sendWithRetry(SECONDNODEID, "moty", 4)){
+    sprintf(buff, "moty: %d", timeTillTea);
+    byte buffLen=strlen(buff);
+    Serial.print(buff);
+    if (radio.sendWithRetry(SECONDNODEID, buff, buffLen)){
       Blink(ledPinStatus,500);
       Serial.print(" ok!");
     }
