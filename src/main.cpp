@@ -4,16 +4,15 @@
 #include <SPI.h>
 
 //******************Green Antenna*************************************************
-// #define NODEID        2    //must be unique for each node on same network (range up to 254, 255 is used for broadcast)
-// #define NETWORKID     100  //the same on all nodes that talk to each other (range up to 255)
-// #define SECONDNODEID     1
+#define NODEID        2    //must be unique for each node on same network (range up to 254, 255 is used for broadcast)
+#define SECONDNODEID     1
 
 //******************White Antenna*************************************************
-#define NODEID        1    //must be unique for each node on same network (range up to 254, 255 is used for broadcast)
-#define NETWORKID     100  //the same on all nodes that talk to each other (range up to 255)
-#define SECONDNODEID     2 //todo change variable name to node 2
+// #define NODEID        1    //must be unique for each node on same network (range up to 254, 255 is used for broadcast)
+// #define SECONDNODEID     2 //todo change variable name to node 2
 
 #define FREQUENCY   RF69_433MHZ
+#define NETWORKID     100  //the same on all nodes that talk to each other (range up to 255)
 
 #define ENCRYPTKEY    "sampleEncryptKey" //exactly the same 16 characters/bytes on all nodes!
 #define IS_RFM69HW_HCW  //uncomment only for RFM69HW/HCW! Leave out if you have RFM69W/CW!
